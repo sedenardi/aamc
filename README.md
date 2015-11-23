@@ -1,5 +1,5 @@
 # aamc
-Download and parse AAMC hospital names
+Download and parse AAMC hospitals' name, city, state, ZIP, and country.
 
 ## Source
 
@@ -17,8 +17,20 @@ npm install aamc
 var aamc = require('aamc');
 
 aamc(function(err, hospitals) {
-  // array of hospital names
+  // array of hospital objects
 });
+```
+
+## Sample Object
+
+```json
+{
+  name: 'Yale School of Medicine',
+  Country: 'United States',
+  City: 'New Haven',
+  State: 'CT',
+  ZIP: '06520-8055'
+}
 ```
 
 ## License

@@ -1,7 +1,7 @@
 {
   "name": "aamc",
-  "version": "1.0.0",
-  "description": "Download and parse AAMC hospital names",
+  "version": "2.0.0",
+  "description": "Download and parse AAMC hospitals' name, city, state, ZIP, and country.",
   "repository": "https://github.com/sedenardi/aamc.git",
   "main": "index.js",
   "dependencies": {

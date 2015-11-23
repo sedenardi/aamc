@@ -15,9 +15,51 @@ var parsePage = function(data) {
   var $ = cheerio.load(data);
   return $('.bodyTXT[cellpadding="3"]').map(function() {
     var html = $(this).find('td').first().html();
-    var firstPart = html.split('<br>')[0].replace('\r\n','').trim();
+    var rows = html.split('<br>').map(function(r) { return r.trim(); });
+    var firstPart = rows[0].replace('\r\n','').trim();
     var linked = cheerio.load(firstPart)('a').text().trim();
-    return linked || firstPart;
+    var obj = { name: linked || firstPart };
+
+    var countryRow;
+    if (rows[3].toLowerCase() === 'united states') {
+      obj.Country = 'United States';
+      countryRow = 3;
+    } else if (rows[3].toLowerCase() === 'canada') {
+      obj.Country = 'Canada';
+      countryRow = 3;
+    } else if (rows[4].toLowerCase() === 'united states') {
+      obj.Country = 'United States';
+      countryRow = 4;
+    } else if (rows[4].toLowerCase() === 'canada') {
+      obj.Country = 'Canada';
+      countryRow = 4;
+    } else if (rows[5].toLowerCase() === 'united states') {
+      obj.Country = 'United States';
+      countryRow = 5;
+    } else if (rows[5].toLowerCase() === 'canada') {
+      obj.Country = 'Canada';
+      countryRow = 5;
+    }
+
+    if (countryRow) {
+      var address = rows[countryRow-1];
+      
+      var cityIndex = address.indexOf(', ');
+      if (cityIndex !== -1) {
+        obj.City = address.slice(0, cityIndex);
+        address = address.slice(cityIndex + 2).trim();
+
+        var stateIndex = address.indexOf(' ');
+        if (stateIndex !== -1) {
+          obj.State = address.slice(0, stateIndex);
+          obj.ZIP = address.slice(stateIndex + 1);
+        }
+      }
+    } else {
+      console.log('missing country: ' + html);
+    }
+
+    return obj;
   }).get();
 };
 
