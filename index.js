@@ -1,16 +1,6 @@
 const request = require('superagent');
 const cheerio = require('cheerio');
 
-const AAMC_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?site=AAMC&webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
-
-const downloadPage = function(cb) {
-  request.get(AAMC_URL)
-    .end((err, res) => {
-      if (err) return cb(err);
-      return cb(null, res.text);
-    });
-};
-
 const parsePage = function(data) {
   const $ = cheerio.load(data);
   return $('.bodyTXT[cellpadding="3"]').map(function() {
@@ -63,10 +53,32 @@ const parsePage = function(data) {
   }).get();
 };
 
-module.exports = function(cb) {
-  downloadPage((err, res) => {
-    if (err) return cb(err);
-    const parsed = parsePage(res);
-    cb(null, parsed);
-  });
+const AAMC_SCHOOL_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?site=AAMC&webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
+
+const downloadAndParse = function(url, cb) {
+  request.get(url)
+    .end((err, res) => {
+      if (err) return cb(err);
+      try {
+        const parsed = parsePage(res.text);
+        cb(null, parsed);
+      } catch(err) {
+        cb(err);
+      }
+    });
 };
+
+const runner = function(url, cb) {
+  if (cb) {
+    downloadAndParse(url, cb);
+  } else {
+    return new Promise((resolve, reject) => {
+      downloadAndParse(url, (err, res) => {
+        if (err) { return reject(err); }
+        return resolve(res);
+      });
+    });
+  }
+};
+
+module.exports.schools = function(cb) { return runner(AAMC_SCHOOL_URL, cb); };
