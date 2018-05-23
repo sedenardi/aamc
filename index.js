@@ -1,7 +1,7 @@
 const request = require('superagent');
 const cheerio = require('cheerio');
 
-const parsePage = function(data) {
+const parsePage = function(data, opts) {
   const $ = cheerio.load(data);
   return $('.bodyTXT[cellpadding="3"]').map(function() {
     const html = $(this).find('td').first().html();
@@ -49,7 +49,8 @@ const parsePage = function(data) {
 
       if (cityRow > 1) {
         const addressRows = rows.slice(1, cityRow);
-        obj.Address = addressRows.join('\n');
+        const delimiter = opts.commaSeparate ? ', ' : '\n';
+        obj.Address = addressRows.join(delimiter);
       }
     } else {
       console.log('missing country: ' + html);
@@ -59,14 +60,15 @@ const parsePage = function(data) {
   }).get();
 };
 
-const AAMC_SCHOOL_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?site=AAMC&webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
+const AAMC_SCHOOL_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
+const AAMC_HOSPITAL_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?webcode=AAMCOrgSearchResult&orgtype=Hospital%2FHealth%20System';
 
-const downloadAndParse = function(url, cb) {
-  request.get(url)
+const downloadAndParse = function(opts, cb) {
+  request.get(opts.url)
     .end((err, res) => {
       if (err) return cb(err);
       try {
-        const parsed = parsePage(res.text);
+        const parsed = parsePage(res.text, opts);
         cb(null, parsed);
       } catch(err) {
         cb(err);
@@ -74,12 +76,12 @@ const downloadAndParse = function(url, cb) {
     });
 };
 
-const runner = function(url, cb) {
+const runner = function(opts, cb) {
   if (cb) {
-    downloadAndParse(url, cb);
+    downloadAndParse(opts, cb);
   } else {
     return new Promise((resolve, reject) => {
-      downloadAndParse(url, (err, res) => {
+      downloadAndParse(opts, (err, res) => {
         if (err) { return reject(err); }
         return resolve(res);
       });
@@ -87,4 +89,13 @@ const runner = function(url, cb) {
   }
 };
 
-module.exports.schools = function(cb) { return runner(AAMC_SCHOOL_URL, cb); };
+module.exports.schools = function(opts, cb) {
+  opts = opts || {};
+  opts.url = AAMC_SCHOOL_URL;
+  return runner(opts, cb);
+};
+module.exports.hospitals = function(opts, cb) {
+  opts = opts || {};
+  opts.url = AAMC_HOSPITAL_URL;
+  return runner(opts, cb);
+};
