@@ -29,6 +29,20 @@ aamc.schools({ commaSeparate: true }).then((schools) => {
 
 ## Sample Object
 
+Parses
+
+```
+Yale School of Medicine
+333 Cedar Street
+Post Office Box 208055
+New Haven, CT 06520-8055
+UNITED STATES
+Phone: (203)785-4672 (0)
+Fax: (203)785-7437
+```
+
+to
+
 ```json
 {
   "name": "Yale School of Medicine",

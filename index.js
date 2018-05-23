@@ -6,7 +6,7 @@ const parsePage = function(data, opts) {
   return $('.bodyTXT[cellpadding="3"]').map(function() {
     const html = $(this).find('td').first().html();
     const rows = html.split('<br>').map((r) => { return r.trim(); });
-    const firstPart = rows[0].replace('\r\n','').trim();
+    const firstPart = rows[0].replace('\r\n', '').trim();
     const linked = cheerio.load(firstPart)('a').text().trim();
     const obj = { name: linked || firstPart };
 
