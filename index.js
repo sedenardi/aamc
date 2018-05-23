@@ -32,7 +32,8 @@ const parsePage = function(data) {
     }
 
     if (countryRow) {
-      let address = rows[countryRow-1];
+      const cityRow = countryRow - 1;
+      let address = rows[cityRow];
 
       const cityIndex = address.indexOf(', ');
       if (cityIndex !== -1) {
@@ -44,6 +45,11 @@ const parsePage = function(data) {
           obj.State = address.slice(0, stateIndex);
           obj.ZIP = address.slice(stateIndex + 1);
         }
+      }
+
+      if (cityRow > 1) {
+        const addressRows = rows.slice(1, cityRow);
+        obj.Address = addressRows.join('\n');
       }
     } else {
       console.log('missing country: ' + html);
