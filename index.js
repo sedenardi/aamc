@@ -1,26 +1,26 @@
-var request = require('superagent');
-var cheerio = require('cheerio');
+const request = require('superagent');
+const cheerio = require('cheerio');
 
-var AAMC_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?site=AAMC&webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
+const AAMC_URL = 'https://members.aamc.org/eweb/DynamicPage.aspx?site=AAMC&webcode=AAMCOrgSearchResult&orgtype=Medical%20School';
 
-var downloadPage = function(cb) {
+const downloadPage = function(cb) {
   request.get(AAMC_URL)
-    .end(function(err, res) {
+    .end((err, res) => {
       if (err) return cb(err);
       return cb(null, res.text);
     });
 };
 
-var parsePage = function(data) {
-  var $ = cheerio.load(data);
+const parsePage = function(data) {
+  const $ = cheerio.load(data);
   return $('.bodyTXT[cellpadding="3"]').map(function() {
-    var html = $(this).find('td').first().html();
-    var rows = html.split('<br>').map(function(r) { return r.trim(); });
-    var firstPart = rows[0].replace('\r\n','').trim();
-    var linked = cheerio.load(firstPart)('a').text().trim();
-    var obj = { name: linked || firstPart };
+    const html = $(this).find('td').first().html();
+    const rows = html.split('<br>').map((r) => { return r.trim(); });
+    const firstPart = rows[0].replace('\r\n','').trim();
+    const linked = cheerio.load(firstPart)('a').text().trim();
+    const obj = { name: linked || firstPart };
 
-    var countryRow;
+    let countryRow;
     if (rows[3].toLowerCase() === 'united states') {
       obj.Country = 'United States';
       countryRow = 3;
@@ -42,14 +42,14 @@ var parsePage = function(data) {
     }
 
     if (countryRow) {
-      var address = rows[countryRow-1];
-      
-      var cityIndex = address.indexOf(', ');
+      let address = rows[countryRow-1];
+
+      const cityIndex = address.indexOf(', ');
       if (cityIndex !== -1) {
         obj.City = address.slice(0, cityIndex);
         address = address.slice(cityIndex + 2).trim();
 
-        var stateIndex = address.indexOf(' ');
+        const stateIndex = address.indexOf(' ');
         if (stateIndex !== -1) {
           obj.State = address.slice(0, stateIndex);
           obj.ZIP = address.slice(stateIndex + 1);
@@ -63,15 +63,10 @@ var parsePage = function(data) {
   }).get();
 };
 
-downloadPage(function(err, res) {
-  if (err) return console.log(err);
-  parsePage(res);
-});
-
 module.exports = function(cb) {
-  downloadPage(function(err, res) {
+  downloadPage((err, res) => {
     if (err) return cb(err);
-    var parsed = parsePage(res);
+    const parsed = parsePage(res);
     cb(null, parsed);
   });
 };
