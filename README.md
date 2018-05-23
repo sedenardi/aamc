@@ -14,7 +14,7 @@ npm install aamc
 ## Usage
 
 ```js
-const aamc = require('./index');
+const aamc = require('aamc');
 
 aamc.hospitals((err, hospitals) => {
   // array of hospital objects
